@@ -14,6 +14,7 @@ type ElmishDispatcher<'Model, 'Msg> =
     abstract Model: 'Model
     abstract Dispatch: 'Msg -> unit
 
+[<RequireQualifiedAccess>]
 module Program =
     let private disposeModel (model: obj) =
         match model with
