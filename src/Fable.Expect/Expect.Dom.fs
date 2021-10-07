@@ -70,16 +70,22 @@ type Element with
         let el = if isNull el.shadowRoot then el else el.shadowRoot :> _
         queries.getByText(el, pattern) :?> HTMLElement
 
-/// Creates an HTML element with the specified tag an puts it in `document.body`.
-/// When disposed, the element will be removed from `document.body`.
-type Container(?tagName: string) =
-    let el = document.createElement(defaultArg tagName "div")
-    do document.body.appendChild(el) |> ignore
-    member _.El = el
-    member _.Dispose() =
-        document.body.removeChild(el) |> ignore
-    interface IDisposable with
-        member this.Dispose() = this.Dispose()
+type Container =
+    inherit IDisposable
+    abstract El: HTMLElement
+
+[<AutoOpen>]
+module ContainerExtensions =
+    type Container with
+        /// Creates an HTML element with the specified tag an puts it in `document.body`.
+        /// When disposed, the element will be removed from `document.body`.
+        static member New(?tagName: string) =
+            let el = document.createElement(defaultArg tagName "div")
+            document.body.appendChild(el) |> ignore
+            { new Container with
+                member _.El = el
+                member _.Dispose() =
+                    document.body.removeChild(el) |> ignore }
 
 [<RequireQualifiedAccess>]
 module Promise =

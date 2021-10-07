@@ -10,7 +10,7 @@ open Browser.Types
 
 describe "Event" <| fun () ->
     it "can create events" <| fun () -> promise {
-        use container = new Container()
+        use container = Container.New()
 
         let mutable sideEffect = 0
         container.El.addEventListener("my-event", fun _ ->
@@ -32,7 +32,7 @@ describe "Event" <| fun () ->
     }
 
     it "can create custom events" <| fun () -> promise {
-        use container = new Container()
+        use container = Container.New()
 
         let mutable sideEffect = 0
         container.El.addEventListener("my-custom-event", fun ev ->

@@ -6,8 +6,7 @@ open Elmish
 open Expect.Dom
 
 type ElmishContainer<'Model> =
-    inherit IDisposable
-    abstract El: HTMLElement
+    inherit Container
     abstract Model: 'Model
 
 type ElmishDispatcher<'Model, 'Msg> =
@@ -25,7 +24,7 @@ module Program =
     /// with an extra property to retrieve the model.
     let mountAndTestWith (mount: HTMLElement -> 'view -> unit) (arg: 'arg) (program: Program<'arg, 'model, 'msg, 'view>) = promise {
         let mutable model = Unchecked.defaultof<_>
-        let container = new Container("div")
+        let container = Container.New("div")
 
         let setState model' dispatch =
             model <- model'

@@ -1,4 +1,4 @@
-#r "nuget: Fable.PublishUtils"
+#r "nuget: Fable.PublishUtils, 2.4.0"
 
 open System
 open PublishUtils
@@ -32,5 +32,4 @@ match args with
             | None -> true
         if publish then
             pushFableNuget (projDir </> file) [] doNothing
-            |> Async.RunSynchronously
 | _ -> ()
