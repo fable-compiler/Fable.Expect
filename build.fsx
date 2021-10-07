@@ -13,22 +13,24 @@ let ignoreCaseEquals (str1: string) (str2: string) =
 
 run "npm install && npm test"
 
+let args =
+    fsi.CommandLineArgs
+    |> Array.skip 1
+    |> List.ofArray
+
 match args with
 | IgnoreCase "publish"::rest ->
     let target = List.tryHead rest
     let srcDir = fullPath "src"
-    let projFiles =
-        [ for pkg in packages do
-            yield (srcDir </> pkg), (pkg + ".fsproj") ]
+    let projFiles = packages |> List.map (fun pkg ->
+        (srcDir </> pkg), (pkg + ".fsproj"))
 
-    async {
-        for projDir, file in projFiles do
+    for projDir, file in projFiles do
+        let publish =
             match target with
-            | Some target ->
-                if ignoreCaseEquals file.[..(file.Length - 8)] target then
-                    do! pushFableNuget (projDir </> file) [] doNothing
-            | None ->
-                do! pushFableNuget (projDir </> file) [] doNothing
-    }
-    |> Async.Start
+            | Some target -> ignoreCaseEquals file.[..(file.Length - 8)] target
+            | None -> true
+        if publish then
+            pushFableNuget (projDir </> file) [] doNothing
+            |> Async.RunSynchronously
 | _ -> ()
