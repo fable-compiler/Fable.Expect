@@ -7292,6 +7292,16 @@ function buildElementRoleList(elementRolesMap) {
 }
 
 // queries.js
+function* collect(xs, f) {
+  for (let x of xs) {
+    for (let y of f(x)) {
+      yield y;
+    }
+  }
+}
+function queryAll(container) {
+  return collect(container.querySelectorAll("*"), (node) => node.shadowRoot ? queryAll(node.shadowRoot) : [node]);
+}
 function getByRole(container, role, accessibleNamePattern) {
   const reg = new RegExp(accessibleNamePattern, "i");
   const subtreeIsInaccessibleCache = new WeakMap();
@@ -7301,7 +7311,7 @@ function getByRole(container, role, accessibleNamePattern) {
     }
     return subtreeIsInaccessibleCache.get(element);
   }
-  const candidates = Array.from(container.querySelectorAll("*")).filter((node) => {
+  const candidates = Array.from(queryAll(container)).filter((node) => {
     const isRoleSpecifiedExplicitly = node.hasAttribute("role");
     if (isRoleSpecifiedExplicitly) {
       const roleValue = node.getAttribute("role");
@@ -7320,7 +7330,7 @@ function getByRole(container, role, accessibleNamePattern) {
 }
 function getByText(el, pattern) {
   const reg = new RegExp(pattern, "i");
-  for (let candidate of el.querySelectorAll("*")) {
+  for (let candidate of queryAll(el)) {
     if (reg.test(getNodeText(candidate))) {
       return candidate;
     }

@@ -4,6 +4,28 @@ import { computeAccessibleName } from "dom-accessibility-api";
 import { getImplicitAriaRoles, getNodeText, isInaccessible, isSubtreeInaccessible } from "./testing-library";
 
 /**
+ * @template T
+ * @template U
+ * @param {Iterable<T>} xs
+ * @param {(x: T) => Iterable<U>} f
+ */
+function* collect(xs, f) {
+    for (let x of xs) {
+        for (let y of f(x)) {
+            yield y;
+        }
+    }
+}
+
+/**
+ * @param {Element} container
+ */
+function queryAll(container) {
+    return collect(container.querySelectorAll('*'), node =>
+        node.shadowRoot ? queryAll(node.shadowRoot) : [node])
+}
+
+/**
  * @param {Element} container
  * @param {string} role
  * @param {string} accessibleNamePattern
@@ -20,7 +42,7 @@ export function getByRole(container, role, accessibleNamePattern) {
     }
 
     const candidates =
-        Array.from(container.querySelectorAll('*'))
+        Array.from(queryAll(container))
             .filter(node => {
                 const isRoleSpecifiedExplicitly = node.hasAttribute('role')
 
@@ -50,7 +72,7 @@ export function getByRole(container, role, accessibleNamePattern) {
  */
 export function getByText(el, pattern) {
     const reg = new RegExp(pattern, "i");
-    for (let candidate of el.querySelectorAll("*")) {
+    for (let candidate of queryAll(el)) {
         if (reg.test(getNodeText(candidate))) {
             return candidate;
         }
